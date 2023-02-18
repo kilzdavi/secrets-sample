@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookStoreCore.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230218204516_AddIdentitySchema")]
+    [Migration("20230218222833_AddIdentitySchema")]
     partial class AddIdentitySchema
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
