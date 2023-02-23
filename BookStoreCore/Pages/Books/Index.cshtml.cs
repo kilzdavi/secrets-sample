@@ -19,13 +19,15 @@ namespace BookStoreCore.Pages.Books
             _context = context;
         }
 
-        public IList<Book> Books { get;set; } = default!;
+        public IList<Book> Book { get;set; } = default!;
 
         public async Task OnGetAsync()
         {
             if (_context.Books != null)
             {
-                Books = await _context.Books.ToListAsync();
+                Book = await _context.Books
+                .Include(b => b.Category)
+                .Include(b => b.Publisher).ToListAsync();
             }
         }
     }

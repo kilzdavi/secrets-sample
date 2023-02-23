@@ -30,11 +30,14 @@ namespace BookStoreCore.Pages.Books
                 return NotFound();
             }
 
-            var book =  await _context.Books.FirstOrDefaultAsync(m => m.Id == id);
+            var book =  await _context.Books.FirstOrDefaultAsync(m => m.BookId == id);
             if (book == null)
             {
                 return NotFound();
             }
+
+            ViewData["CategoryId"] = new SelectList(_context.Categories, "CategoryId", "CategoryName");
+            ViewData["PublisherId"] = new SelectList(_context.Publishers, "PublisherId", "PublisherName");
             Book = book;
             return Page();
         }
@@ -56,7 +59,7 @@ namespace BookStoreCore.Pages.Books
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!BookExists(Book.Id))
+                if (!BookExists(Book.BookId))
                 {
                     return NotFound();
                 }
@@ -71,7 +74,7 @@ namespace BookStoreCore.Pages.Books
 
         private bool BookExists(int id)
         {
-          return _context.Books.Any(e => e.Id == id);
+          return _context.Books.Any(e => e.BookId == id);
         }
     }
 }

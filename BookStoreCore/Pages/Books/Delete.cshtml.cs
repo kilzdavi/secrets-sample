@@ -29,7 +29,7 @@ namespace BookStoreCore.Pages.Books
                 return NotFound();
             }
 
-            var book = await _context.Books.FirstOrDefaultAsync(m => m.Id == id);
+            var book = await _context.Books.FirstOrDefaultAsync(m => m.BookId == id);
 
             if (book == null)
             {

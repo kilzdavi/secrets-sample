@@ -5,7 +5,7 @@ namespace BookStoreCore.Models
     public class Category
     {
         [Key]
-        public int Id { get; set; }
+        public int CategoryId { get; set; }
         [MaxLength(100)]
         public string CategoryName { get; set; }
 
