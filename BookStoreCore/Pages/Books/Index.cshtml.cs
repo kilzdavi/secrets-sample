@@ -19,13 +19,34 @@ namespace BookStoreCore.Pages.Books
             _context = context;
         }
 
-        public IList<Book> Book { get;set; } = default!;
+        public string NameSort { get; set; }
+        public string DateSort { get; set; }
+        public string CurrentFilter { get; set; }
+        public string CurrentSort { get; set; }
 
-        public async Task OnGetAsync()
+        public IList<Book> Books { get;set; } = default!;
+
+        public async Task OnGetAsync(string sortOrder)
         {
+            NameSort = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            //DateSort = sortOrder == "Date" ? "date_desc" : "Date";
+
+            IQueryable<Book> booksIQ = from b in _context.Books
+                                      select b;
+
+            switch (sortOrder)
+            {
+                case "name_desc":
+                    booksIQ = booksIQ.OrderByDescending(b => b.Title);
+                    break;
+                default:
+                    booksIQ = booksIQ.OrderBy(b => b.Title);
+                    break;
+            }
+
             if (_context.Books != null)
             {
-                Book = await _context.Books
+                Books = await booksIQ.AsNoTracking()
                 .Include(b => b.Category)
                 .Include(b => b.Publisher).ToListAsync();
             }
