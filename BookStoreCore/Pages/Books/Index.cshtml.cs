@@ -26,13 +26,17 @@ namespace BookStoreCore.Pages.Books
 
         public IList<Book> Books { get;set; } = default!;
 
-        public async Task OnGetAsync(string sortOrder)
+        public async Task OnGetAsync(string sortOrder, string searchString)
         {
             NameSort = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
             //DateSort = sortOrder == "Date" ? "date_desc" : "Date";
 
             IQueryable<Book> booksIQ = from b in _context.Books
                                       select b;
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                booksIQ = booksIQ.Where(b => b.Title.Contains(searchString));
+            }
 
             switch (sortOrder)
             {
