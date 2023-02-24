@@ -55,33 +55,25 @@ namespace BookStoreCore.Pages.Books
 
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see https://aka.ms/RazorPagesCRUD.
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(int id)
         {
-            if (!ModelState.IsValid)
+            var bookToUpdate = await _context.Books.FindAsync(id);
+
+            if (!BookExists(id))
             {
-                return Page();
+                return NotFound();
             }
 
-            _context.Books.Update(Book);
-            _context.Attach(Book).State = EntityState.Modified;
-
-            try
+            if (await TryUpdateModelAsync<Book>(
+                bookToUpdate,
+                "book",
+                b => b.Title, b => b.Author, b => b.CategoryId, b => b.PublisherId))
             {
                 await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!BookExists(Book.BookId))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return RedirectToPage("./Index");
             }
 
-            return RedirectToPage("./Index");
+            return Page();
         }
 
         private bool BookExists(int id)
