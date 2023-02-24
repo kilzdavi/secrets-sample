@@ -8,6 +8,6 @@ namespace BookStoreCore.Models
         public int PublisherId { get; set; }
         public string PublisherName { get; set; }
 
-        public List<Book> Book { get; set; }
+        public List<Book>? Book { get; set; }
     }
 }

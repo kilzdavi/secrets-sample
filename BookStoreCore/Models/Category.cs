@@ -9,6 +9,6 @@ namespace BookStoreCore.Models
         [MaxLength(100)]
         public string CategoryName { get; set; }
 
-        public ICollection<Book> Books { get; set; }
+        public ICollection<Book>? Books { get; set; }
     }
 }

@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BookStoreCore.Data;
 using BookStoreCore.Models;
+using BookStoreCore.ViewModels.Books;
+using System.Security.Policy;
 
 namespace BookStoreCore.Pages.Books
 {
@@ -23,6 +25,8 @@ namespace BookStoreCore.Pages.Books
         [BindProperty]
         public Book Book { get; set; } = default!;
 
+        //[BindProperty]
+        //public EditBookVM BookVM { get; set; } = default!;
         public async Task<IActionResult> OnGetAsync(int? id)
         {
             if (id == null || _context.Books == null)
@@ -30,12 +34,19 @@ namespace BookStoreCore.Pages.Books
                 return NotFound();
             }
 
-            var book =  await _context.Books.FirstOrDefaultAsync(m => m.BookId == id);
+          //Includes relational data to book
+            var book =  await _context.Books
+                .Include(b => b.Publisher)
+                .Include(b => b.Category)
+                .FirstOrDefaultAsync(m => m.BookId == id);
+
+
             if (book == null)
             {
                 return NotFound();
             }
 
+            //Reads in DropDown Lists for Relational Data.
             ViewData["CategoryId"] = new SelectList(_context.Categories, "CategoryId", "CategoryName");
             ViewData["PublisherId"] = new SelectList(_context.Publishers, "PublisherId", "PublisherName");
             Book = book;
@@ -51,6 +62,7 @@ namespace BookStoreCore.Pages.Books
                 return Page();
             }
 
+            _context.Books.Update(Book);
             _context.Attach(Book).State = EntityState.Modified;
 
             try

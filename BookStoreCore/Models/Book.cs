@@ -13,10 +13,10 @@ namespace BookStoreCore.Models
         public string Author { get; set; }
 
         public int PublisherId { get; set; }
-        public Publisher Publisher { get; set; }
+        public Publisher? Publisher { get; set; }
 
         public int CategoryId { get; set; }
-        public Category Category { get; set; }
+        public Category? Category { get; set; }
         
     }
 }
