@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  bookstorecore:
+    image: ${DOCKER_REGISTRY-}bookstorecore
+    build:
+      context: .
+      dockerfile: BookStoreCore/Dockerfile
