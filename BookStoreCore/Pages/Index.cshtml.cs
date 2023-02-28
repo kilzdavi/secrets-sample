@@ -1,5 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Exporter;
+
+
 
 namespace BookStoreCore.Pages
 {
@@ -16,5 +24,12 @@ namespace BookStoreCore.Pages
         {
 
         }
+
+        public void StartTrace()
+        {
+
+        }
+
+       
     }
 }

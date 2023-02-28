@@ -31,12 +31,16 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc9.14" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc9.14" />
     <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.0.0-rc9.14" />
+    <PackageReference Include="OpenTelemetry.Contrib.Extensions.AWSXRay" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="tmp\" />
+    <None Remove="DockerImages\SqlServer\" />
+    <None Remove="OpenTelemetry.Contrib.Extensions.AWSXRay" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="tmp\" />
+    <Folder Include="DockerImages\SqlServer\" />
   </ItemGroup>
 </Project>

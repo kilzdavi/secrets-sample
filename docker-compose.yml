@@ -10,6 +10,9 @@ services:
 
   mssql: # database container stack
     image: ${DOCKER_REGISTRY-}mssql-image # Image created from Dockerfile.
+    build:
+        context: .
+        dockerfile: BookStoreCore/DockerImages/SqlServer/Dockerfile
     ports:
       - "1433:1433"
     volumes:
@@ -18,20 +21,53 @@ services:
       ACCEPT_EULA: Y
       MSSQL_SA_PASSWORD: Password123!
 
-  # Collector
-  otel-collector:
-    image: otel/opentelemetry-collector
-    command: [--config=/etc/otel-collector-config.yaml]
+
+      # ADOT Collector
+  aws-ot-collector:
+    image: public.ecr.aws/aws-observability/aws-otel-collector:latest
+    # very slow when you build it first time locally!!!
+    # build:
+    # context: ../
+    # dockerfile: cmd/awscollector/Dockerfile
+    command: ["--config=/etc/adot-otel-agent-config.yaml"]
+    environment:
+      - AWS_REGION=us-east-1
+      - AWS_PROFILE=default
+      # Either uncomment and define these:
+      #
+      # - AWS_PROFILE=<profile>
+      # - AWS_ACCESS_KEY_ID=<to_be_added>
+      # - AWS_SECRET_ACCESS_KEY=<to_be_added>
+      #
+      # Or define a profile available in your shared credentials file
+      #
+       
+
     volumes:
-      - ./BookStoreCore/tmp/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ./BookStoreCore/tmp/adot-otel-agent-config.yaml:/etc/adot-otel-agent-config.yaml
+      - ~/.aws:/root/.aws
     ports:
-    - 1888:1888 # pprof extension
-    - 8888:8888 # Prometheus metrics exposed by the collector
-    - 8889:8889 # Prometheus exporter metrics
-    - 13133:13133 # health_check extension
-    - 4317:4317 # OTLP gRPC receiver
-    - 4318:4318 # OTLP http receiver
-    - 55679:55679 # zpages extension
+      - "1888:1888" # pprof extension
+      - "8888:8888" # Prometheus metrics exposed by the collector
+      - "8889:8889" # Prometheus exporter metrics
+      - "1777:1777"   # pprof extension
+      - "55679:55679" # zpages extension
+      - "13133"       # health_check
+
+  # VanilliaCollector
+#  otel-collector:
+#    image: otel/opentelemetry-collector
+#    command: [--config=/etc/otel-collector-config.yaml]
+#    volumes:
+#      - ./BookStoreCore/tmp/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+#    ports:
+#    - 1888:1888 # pprof extension
+#    - 8888:8888 # Prometheus metrics exposed by the collector
+#    - 8889:8889 # Prometheus exporter metrics
+#    - 13133:13133 # health_check extension
+#    - 4317:4317 # OTLP gRPC receiver
+#    - 4318:4318 # OTLP http receiver
+#    - 55679:55679 # zpages extension
 
 volumes:
    mssql:
