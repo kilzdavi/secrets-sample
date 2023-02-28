@@ -1,10 +1,60 @@
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Metrics;
+
 using BookStoreCore.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using OpenTelemetry.Exporter;
+
+// Define some important constants to initialize tracing with
+var serviceName = "AWS.SampleApp.BookStoreCore";
+var serviceVersion = "1.0.0";
+var MyActivitySource = new ActivitySource(serviceName);
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var appResourceBuilder = ResourceBuilder.CreateDefault()
+    .AddService(serviceName: serviceName, serviceVersion: serviceVersion);
+
+// Configure important OpenTelemetry settings, the console exporter, and instrumentation library
+builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
+{
+    tracerProviderBuilder
+        .AddOtlpExporter(opt =>
+        {
+            opt.Protocol = OtlpExportProtocol.HttpProtobuf;
+        })
+        .AddSource(serviceName)
+        .SetResourceBuilder(
+            ResourceBuilder.CreateDefault()
+                .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+        .AddHttpClientInstrumentation()
+        .AddAspNetCoreInstrumentation()
+        .AddSqlClientInstrumentation();
+});
+
+var meter = new Meter(serviceName);
+var counter = meter.CreateCounter<long>("app.request-counter");
+
+builder.Services.AddOpenTelemetry().WithMetrics(metricProviderBuilder =>
+{
+    metricProviderBuilder
+        .AddOtlpExporter(opt =>
+        {
+            opt.Protocol = OtlpExportProtocol.HttpProtobuf;
+        })
+        .AddMeter(meter.Name)
+        .SetResourceBuilder(appResourceBuilder)
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation();
+});
+
+
+// Add Additional services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddDbContext<ApplicationDbContext>(
     options => options.UseSqlServer(
@@ -91,5 +141,20 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
+
+app.MapGet("/hello", () =>
+{
+    // Track work inside of the request
+    using var activity = MyActivitySource.StartActivity("SayHello");
+    activity?.SetTag("foo", 1);
+    activity?.SetTag("bar", "Hello, World!");
+    activity?.SetTag("baz", new int[] { 1, 2, 3 });
+
+    // Up a counter for each request
+    counter.Add(1);
+
+    return "Hello, World!";
+});
+
 
 app.Run();
