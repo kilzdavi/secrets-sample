@@ -1,38 +1,32 @@
-﻿# /tmp/otel-agent-config.yaml
-extensions:
-  health_check:
-
-receivers:
+﻿receivers:
   otlp:
     protocols:
       grpc:
-        endpoint: 0.0.0.0:4317
       http:
-        endpoint: 0.0.0.0:4318
-  awsxray:
-    endpoint: 0.0.0.0:2000
-    transport: udp
-
-processors:
-  batch/traces:
-    timeout: 1s
-    send_batch_size: 50
-  batch/metrics:
-    timeout: 60s
+        cors:
+          allowed_origins:
+            - http://*
+            - https://*
+  otlp/spanmetrics:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:12346
 
 exporters:
-  awsxray:
-  awsemf:
+  prometheus:
+    endpoint: '0.0.0.0:9464'
+
+processors:
+  batch:
+  spanmetrics:
+    metrics_exporter: prometheus
 
 service:
   pipelines:
     traces:
-      receivers: [otlp,awsxray]
-      processors: [batch/traces]
-      exporters: [awsxray]
-    metrics:
       receivers: [otlp]
-      processors: [batch/metrics]
-      exporters: [awsemf]
-
-  extensions: [health_check]
+      processors: [spanmetrics, batch]
+    metrics:
+      receivers: [otlp/spanmetrics]
+      exporters: [prometheus]
+      processors: [batch]

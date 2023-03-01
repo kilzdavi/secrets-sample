@@ -3,11 +3,16 @@ using System.Diagnostics.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
+using OpenTelemetry;
+
+
 
 using BookStoreCore.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using OpenTelemetry.Exporter;
+using OpenTelemetry.Contrib.Extensions.AWSXRay.Trace;
+using System.Net.Http;
 
 // Define some important constants to initialize tracing with
 var serviceName = "AWS.SampleApp.BookStoreCore";
@@ -24,6 +29,9 @@ var appResourceBuilder = ResourceBuilder.CreateDefault()
 builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
 {
     tracerProviderBuilder
+        .AddXRayTraceId()
+        .AddAWSInstrumentation()
+        //.AddConsoleExporter()
         .AddOtlpExporter(opt =>
         {
             opt.Protocol = OtlpExportProtocol.HttpProtobuf;
@@ -35,7 +43,10 @@ builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
         .AddHttpClientInstrumentation()
         .AddAspNetCoreInstrumentation()
         .AddSqlClientInstrumentation();
+
+
 });
+
 
 var meter = new Meter(serviceName);
 var counter = meter.CreateCounter<long>("app.request-counter");
@@ -43,9 +54,9 @@ var counter = meter.CreateCounter<long>("app.request-counter");
 builder.Services.AddOpenTelemetry().WithMetrics(metricProviderBuilder =>
 {
     metricProviderBuilder
-        .AddOtlpExporter(opt =>
+        .AddPrometheusExporter(options =>
         {
-            opt.Protocol = OtlpExportProtocol.HttpProtobuf;
+            options.ScrapeResponseCacheDurationMilliseconds = 0;
         })
         .AddMeter(meter.Name)
         .SetResourceBuilder(appResourceBuilder)
@@ -142,18 +153,35 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
-app.MapGet("/hello", () =>
+app.MapGet("/test", async () =>
 {
-    // Track work inside of the request
-    using var activity = MyActivitySource.StartActivity("SayHello");
-    activity?.SetTag("foo", 1);
-    activity?.SetTag("bar", "Hello, World!");
-    activity?.SetTag("baz", new int[] { 1, 2, 3 });
+    var httpClient = new HttpClient();
+    var html = await httpClient.GetStringAsync("https://example.com/");
+    if (string.IsNullOrWhiteSpace(html))
+    {
+        return "Hello, World!";
+    }
+    else
+    {
+        return "Hello, World!";
+    }
+});
 
-    // Up a counter for each request
-    counter.Add(1);
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
-    return "Hello, World!";
+
+app.MapGet("/hello", async () =>
+{
+    var httpClient = new HttpClient();
+    var html = await httpClient.GetStringAsync("https://example.com/");
+    if (string.IsNullOrWhiteSpace(html))
+    {
+        return $"Hello, World!";
+    }
+    else
+    {
+        return "Hello, World!";
+    }
 });
 
 

@@ -9,10 +9,8 @@ services:
 
 
   mssql: # database container stack
-    image: ${DOCKER_REGISTRY-}mssql-image # Image created from Dockerfile.
-    build:
-        context: .
-        dockerfile: BookStoreCore/DockerImages/SqlServer/Dockerfile
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    user: root
     ports:
       - "1433:1433"
     volumes:
@@ -39,36 +37,28 @@ services:
       # - AWS_ACCESS_KEY_ID=<to_be_added>
       # - AWS_SECRET_ACCESS_KEY=<to_be_added>
       #
-      # Or define a profile available in your shared credentials file
-      #
-       
+      # Or define a profile available in your shared credentials file 
 
     volumes:
       - ./BookStoreCore/tmp/adot-otel-agent-config.yaml:/etc/adot-otel-agent-config.yaml
       - ~/.aws:/root/.aws
     ports:
-      - "1888:1888" # pprof extension
-      - "8888:8888" # Prometheus metrics exposed by the collector
-      - "8889:8889" # Prometheus exporter metrics
-      - "1777:1777"   # pprof extension
-      - "55679:55679" # zpages extension
-      - "13133"       # health_check
+      - 1888:1888 # pprof extension
+      - 8888:8888 # Prometheus metrics exposed by the collector
+      - 8889:8889 # Prometheus exporter metrics
+      - 13133:13133 # health_check extension
+      - 4317:4317 # OTLP gRPC receiver
+      - 4318:4318 # OTLP http receiver
+      - 55679:55679 # zpages extension
 
-  # VanilliaCollector
-#  otel-collector:
-#    image: otel/opentelemetry-collector
-#    command: [--config=/etc/otel-collector-config.yaml]
-#    volumes:
-#      - ./BookStoreCore/tmp/otel-collector-config.yaml:/etc/otel-collector-config.yaml
-#    ports:
-#    - 1888:1888 # pprof extension
-#    - 8888:8888 # Prometheus metrics exposed by the collector
-#    - 8889:8889 # Prometheus exporter metrics
-#    - 13133:13133 # health_check extension
-#    - 4317:4317 # OTLP gRPC receiver
-#    - 4318:4318 # OTLP http receiver
-#    - 55679:55679 # zpages extension
-
+# Prometheus
+  prometheus:
+    image: prom/prometheus
+    volumes:
+        - ./BookStoreCore/tmp/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+        - "9090:9090"
+ 
 volumes:
    mssql:
-     external: true # External disk to use an existing volume
+   #  external: true # External disk to use an existing volume
