@@ -9,6 +9,7 @@ services:
 
 
   mssql: # database container stack
+    container_name: mssql
     image: mcr.microsoft.com/mssql/server:2022-latest
     user: root
     ports:
@@ -22,6 +23,7 @@ services:
 
       # ADOT Collector
   aws-ot-collector:
+    container_name: adot-collector
     image: public.ecr.aws/aws-observability/aws-otel-collector:latest
     # very slow when you build it first time locally!!!
     # build:
@@ -53,6 +55,7 @@ services:
 
 # Prometheus
   prometheus:
+    container_name: prometheus
     image: prom/prometheus
     volumes:
         - ./BookStoreCore/tmp/prometheus.yml:/etc/prometheus/prometheus.yml
