@@ -1,32 +1,35 @@
 ﻿receivers:
-  otlp:
-    protocols:
-      grpc:
-      http:
-        cors:
-          allowed_origins:
-            - http://*
-            - https://*
-  otlp/spanmetrics:
-    protocols:
-      grpc:
-        endpoint: 0.0.0.0:12346
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: otel-collector
+          scrape_interval: 5s
+          static_configs:
+            - targets: [localhost:8888]
+
+processors:
+  memory_limiter:
+    check_interval: 5s
+    limit_mib: 4000
+    spike_limit_mib: 500
+
+  batch:
 
 exporters:
   prometheus:
-    endpoint: '0.0.0.0:9464'
+    endpoint: localhost:8889
+    namespace: default
 
-processors:
-  batch:
-  spanmetrics:
-    metrics_exporter: prometheus
+extensions:
+  health_check:
+  pprof:
+  zpages:
+  memory_ballast:
+    size_mib: 512
 
 service:
   pipelines:
-    traces:
-      receivers: [otlp]
-      processors: [spanmetrics, batch]
     metrics:
-      receivers: [otlp/spanmetrics]
+      receivers: [prometheus]
+     # processors: [batch, memory_limiter]
       exporters: [prometheus]
-      processors: [batch]
