@@ -27,30 +27,30 @@ var MyActivitySource = new ActivitySource(serviceName);
 var appResourceBuilder = ResourceBuilder.CreateDefault()
         .AddService(serviceName: serviceName, serviceVersion: serviceVersion);
 
-    // Configure important OpenTelemetry settings, the console exporter, and instrumentation library
-    //builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
-    //{
-    //    tracerProviderBuilder
-    //        //.AddXRayTraceId()
-    //        //.AddAWSInstrumentation()
-    //        //.AddConsoleExporter()
-    //        .AddOtlpExporter(opt =>
-    //        {
-    //            opt.Protocol = OtlpExportProtocol.HttpProtobuf;
-    //        })
-    //        .AddSource(serviceName)
-    //        .SetResourceBuilder(
-    //            ResourceBuilder.CreateDefault()
-    //                .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
-    //        .AddHttpClientInstrumentation()
-    //        .AddAspNetCoreInstrumentation()
-    //        .AddSqlClientInstrumentation();
+// Configure important OpenTelemetry settings, the console exporter, and instrumentation library
+//builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
+//{
+//    tracerProviderBuilder
+//        .AddXRayTraceId()
+//        .AddAWSInstrumentation()
+//        .AddConsoleExporter()
+//        .AddOtlpExporter(opt =>
+//        {
+//            opt.Protocol = OtlpExportProtocol.HttpProtobuf;
+//        })
+//        .AddSource(serviceName)
+//        .SetResourceBuilder(
+//            ResourceBuilder.CreateDefault()
+//                .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+//        .AddHttpClientInstrumentation()
+//        .AddAspNetCoreInstrumentation()
+//        .AddSqlClientInstrumentation();
 
-    //});
+//});
 
 
-    var meter = new Meter(serviceName);
-    var counter = meter.CreateCounter<long>("app.request-counter");
+var meter = new Meter(serviceName);
+var counter = meter.CreateCounter<long>("app.request-counter");
 
     builder.Services.AddOpenTelemetry().WithMetrics(metricProviderBuilder =>
     {
@@ -63,6 +63,7 @@ var appResourceBuilder = ResourceBuilder.CreateDefault()
             .SetResourceBuilder(appResourceBuilder)
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation();
+            
     });
 
 #endregion
@@ -157,6 +158,7 @@ app.MapRazorPages();
 //Config Otel Endpoint for Prometheus
 app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
+
 app.MapGet("/test", async () =>
 {
     var httpClient = new HttpClient();
@@ -170,6 +172,20 @@ app.MapGet("/test", async () =>
         return "Hello, World!";
     }
 });
+
+//app.MapGet("/test", async () =>
+//{
+//    var httpClient = new HttpClient();
+//    var html = await httpClient.GetStringAsync("https://example.com/");
+//    if (string.IsNullOrWhiteSpace(html))
+//    {
+//        return "Hello, World!";
+//    }
+//    else
+//    {
+//        return "Hello, World!";
+//    }
+//});
 
 
 app.Run();

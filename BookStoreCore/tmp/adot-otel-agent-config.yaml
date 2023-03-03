@@ -5,7 +5,7 @@
         - job_name: otel-collector
           scrape_interval: 5s
           static_configs:
-            - targets: [localhost:8888]
+            - targets: [0.0.0.0:8888]
 
 processors:
   memory_limiter:
@@ -17,7 +17,7 @@ processors:
 
 exporters:
   prometheus:
-    endpoint: localhost:8889
+    endpoint: 0.0.0.0:8889
     namespace: default
 
 extensions:

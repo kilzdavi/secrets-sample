@@ -23,7 +23,7 @@ services:
 
       # ADOT Collector
   aws-ot-collector:
-    container_name: adot-collector
+    container_name: adot
     image: public.ecr.aws/aws-observability/aws-otel-collector:latest
     # very slow when you build it first time locally!!!
     # build:
