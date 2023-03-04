@@ -2,6 +2,7 @@ version: '3.4'
 
 services:
   bookstorecore:
+    container_name: bookstorecore
     image: ${DOCKER_REGISTRY-}bookstorecore
     build:
       context: .
@@ -64,4 +65,4 @@ services:
  
 volumes:
    mssql:
-   #  external: true # External disk to use an existing volume
+     external: true # External disk to use an existing volume

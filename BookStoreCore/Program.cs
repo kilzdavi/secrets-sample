@@ -55,6 +55,8 @@ var counter = meter.CreateCounter<long>("app.request-counter");
     builder.Services.AddOpenTelemetry().WithMetrics(metricProviderBuilder =>
     {
         metricProviderBuilder
+            .AddOtlpExporter(options =>
+                    options.Protocol = OtlpExportProtocol.Grpc)
             .AddPrometheusExporter(options =>
             {
                 options.ScrapeResponseCacheDurationMilliseconds = 0;

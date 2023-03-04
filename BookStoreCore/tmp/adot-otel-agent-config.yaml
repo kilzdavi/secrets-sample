@@ -1,4 +1,7 @@
 ﻿receivers:
+  otlp:
+    protocols:
+      grpc:
   prometheus:
     config:
       scrape_configs:
@@ -30,6 +33,6 @@ extensions:
 service:
   pipelines:
     metrics:
-      receivers: [prometheus]
-     # processors: [batch, memory_limiter]
+      receivers: [otlp, prometheus]
+      processors: [batch]
       exporters: [prometheus]
