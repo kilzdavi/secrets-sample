@@ -15,6 +15,18 @@ using OpenTelemetry.Contrib.Extensions.AWSXRay.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add Additional services to the container.
+builder.Services.AddRazorPages();
+
+//Dependency Injection for DB Context
+builder.Services.AddDbContext<ApplicationDbContext>(
+    options => options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+        ));
+
+builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+
 #region OpenTelemetry
 var serviceName = "AWS.SampleApp.BookStoreCore";
 var serviceVersion = "1.0.0";
@@ -33,7 +45,7 @@ builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
         .AddOtlpExporter(options =>
         {
             options.Protocol = OtlpExportProtocol.Grpc;
-            options.Endpoint = new Uri("http://adot:4317");
+            options.Endpoint = new Uri(Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT"));
 
         })
         .AddSource(serviceName)
@@ -57,7 +69,7 @@ builder.Services.AddOpenTelemetry().WithMetrics(metricProviderBuilder =>
         .AddOtlpExporter(options =>
         {
             options.Protocol = OtlpExportProtocol.Grpc;
-            options.Endpoint = new Uri("http://adot:4317");
+            options.Endpoint = new Uri(Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT"));
 
         })
         // *** Using Otel Collector now *** //
@@ -73,17 +85,6 @@ builder.Services.AddOpenTelemetry().WithMetrics(metricProviderBuilder =>
 });
 
 #endregion
-
-// Add Additional services to the container.
-builder.Services.AddRazorPages();
-
-//Dependency Injection for DB Context
-builder.Services.AddDbContext<ApplicationDbContext>(
-    options => options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-        )); 
-
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 #region Identity
     builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<ApplicationDbContext>();

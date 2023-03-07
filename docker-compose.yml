@@ -7,6 +7,9 @@ services:
     build:
       context: .
       dockerfile: BookStoreCore/Dockerfile
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://adot:4317
+      - OTEL_RESOURCE_ATTRIBUTES=service.name=aws-sampleapp-bookstorecore
 
 
   mssql: # database container stack
@@ -23,7 +26,7 @@ services:
 
 
       # ADOT Collector
-  aws-ot-collector:
+  aws-otel-collector:
     container_name: adot
     image: public.ecr.aws/aws-observability/aws-otel-collector:latest
     # very slow when you build it first time locally!!!
@@ -43,7 +46,7 @@ services:
       # Or define a profile available in your shared credentials file 
 
     volumes:
-      - ./BookStoreCore/tmp/adot-otel-agent-config.yaml:/etc/adot-otel-agent-config.yaml
+      - ./BookStoreCore/adot-otel-config.yaml:/etc/adot-otel-agent-config.yaml
       - ~/.aws:/root/.aws
     ports:
       - 1888:1888 # pprof extension
@@ -59,10 +62,10 @@ services:
     container_name: prometheus
     image: prom/prometheus
     volumes:
-        - ./BookStoreCore/tmp/prometheus.yml:/etc/prometheus/prometheus.yml
+        - ./BookStoreCore/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
         - "9090:9090"
 
 volumes:
    mssql:
-     external: true # External disk to use an existing volume
+    # external: true # External disk to use an existing volume
