@@ -5,19 +5,15 @@ using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
 using OpenTelemetry;
 
-
-
 using BookStoreCore.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Contrib.Extensions.AWSXRay.Trace;
-using System.Net.Http;
 
 // Define some important constants to initialize tracing with
 
 var builder = WebApplication.CreateBuilder(args);
-
 
 #region OpenTelemetry
 var serviceName = "AWS.SampleApp.BookStoreCore";
@@ -27,60 +23,65 @@ var MyActivitySource = new ActivitySource(serviceName);
 var appResourceBuilder = ResourceBuilder.CreateDefault()
         .AddService(serviceName: serviceName, serviceVersion: serviceVersion);
 
-// Configure important OpenTelemetry settings, the console exporter, and instrumentation library
-//builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
-//{
-//    tracerProviderBuilder
-//        .AddXRayTraceId()
-//        .AddAWSInstrumentation()
-//        .AddConsoleExporter()
-//        .AddOtlpExporter(opt =>
-//        {
-//            opt.Protocol = OtlpExportProtocol.HttpProtobuf;
-//        })
-//        .AddSource(serviceName)
-//        .SetResourceBuilder(
-//            ResourceBuilder.CreateDefault()
-//                .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
-//        .AddHttpClientInstrumentation()
-//        .AddAspNetCoreInstrumentation()
-//        .AddSqlClientInstrumentation();
+//Configure important OpenTelemetry settings, the console exporter, and instrumentation library
 
-//});
 
+builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
+{
+    tracerProviderBuilder
+        .AddConsoleExporter()
+        .AddOtlpExporter(options =>
+        {
+            options.Protocol = OtlpExportProtocol.Grpc;
+            options.Endpoint = new Uri("http://adot:4317");
+
+        })
+        .AddSource(serviceName)
+        .SetResourceBuilder(appResourceBuilder.AddTelemetrySdk())
+        .AddXRayTraceId()
+        .AddAWSInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddAspNetCoreInstrumentation()
+        .AddSqlClientInstrumentation();
+
+});
+
+Sdk.SetDefaultTextMapPropagator(new AWSXRayPropagator());
 
 var meter = new Meter(serviceName);
 var counter = meter.CreateCounter<long>("app.request-counter");
 
-    builder.Services.AddOpenTelemetry().WithMetrics(metricProviderBuilder =>
-    {
-        metricProviderBuilder
-            .AddOtlpExporter(options =>
-            {
-                options.Protocol = OtlpExportProtocol.Grpc;
-                options.Endpoint = new Uri("http://adot:4317");
+builder.Services.AddOpenTelemetry().WithMetrics(metricProviderBuilder =>
+{
+    metricProviderBuilder
+        .AddOtlpExporter(options =>
+        {
+            options.Protocol = OtlpExportProtocol.Grpc;
+            options.Endpoint = new Uri("http://adot:4317");
 
-            })
-            // *** Using Otel Collector now *** //
-            //.AddPrometheusExporter(options =>
-            //{
-            //    options.ScrapeResponseCacheDurationMilliseconds = 0;
-            //})
-            .AddMeter(meter.Name)
-            .SetResourceBuilder(appResourceBuilder)
-            .AddAspNetCoreInstrumentation()
-            .AddHttpClientInstrumentation();
-            
-    });
+        })
+        // *** Using Otel Collector now *** //
+        //.AddPrometheusExporter(options =>
+        //{
+        //    options.ScrapeResponseCacheDurationMilliseconds = 0;
+        //})
+        .AddMeter(meter.Name)
+        .SetResourceBuilder(appResourceBuilder)
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation();
+
+});
 
 #endregion
 
 // Add Additional services to the container.
 builder.Services.AddRazorPages();
+
+//Dependency Injection for DB Context
 builder.Services.AddDbContext<ApplicationDbContext>(
     options => options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")
-        )); //Dependency Injection for DB Context
+        )); 
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

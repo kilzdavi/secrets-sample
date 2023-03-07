@@ -62,7 +62,7 @@ services:
         - ./BookStoreCore/tmp/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
         - "9090:9090"
- 
+
 volumes:
    mssql:
      external: true # External disk to use an existing volume
