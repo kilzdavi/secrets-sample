@@ -56,11 +56,16 @@ var counter = meter.CreateCounter<long>("app.request-counter");
     {
         metricProviderBuilder
             .AddOtlpExporter(options =>
-                    options.Protocol = OtlpExportProtocol.Grpc)
-            .AddPrometheusExporter(options =>
             {
-                options.ScrapeResponseCacheDurationMilliseconds = 0;
+                options.Protocol = OtlpExportProtocol.Grpc;
+                options.Endpoint = new Uri("http://adot:4317");
+
             })
+            // *** Using Otel Collector now *** //
+            //.AddPrometheusExporter(options =>
+            //{
+            //    options.ScrapeResponseCacheDurationMilliseconds = 0;
+            //})
             .AddMeter(meter.Name)
             .SetResourceBuilder(appResourceBuilder)
             .AddAspNetCoreInstrumentation()
@@ -147,7 +152,7 @@ using (var scope = app.Services.CreateScope())
      DbInitializer.Initialize(context);
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -157,37 +162,7 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
-//Config Otel Endpoint for Prometheus
-app.UseOpenTelemetryPrometheusScrapingEndpoint();
-
-
-app.MapGet("/test", async () =>
-{
-    var httpClient = new HttpClient();
-    var html = await httpClient.GetStringAsync("https://example.com/");
-    if (string.IsNullOrWhiteSpace(html))
-    {
-        return "Hello, World!";
-    }
-    else
-    {
-        return "Hello, World!";
-    }
-});
-
-//app.MapGet("/test", async () =>
-//{
-//    var httpClient = new HttpClient();
-//    var html = await httpClient.GetStringAsync("https://example.com/");
-//    if (string.IsNullOrWhiteSpace(html))
-//    {
-//        return "Hello, World!";
-//    }
-//    else
-//    {
-//        return "Hello, World!";
-//    }
-//});
-
+//Config Otel Endpoint for Prometheus *** Using Otel Collector now ***
+//app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 app.Run();
