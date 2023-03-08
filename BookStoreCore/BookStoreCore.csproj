@@ -38,13 +38,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="tmp\" />
     <None Remove="DockerImages\SqlServer\" />
     <None Remove="OpenTelemetry.Contrib.Extensions.AWSXRay" />
     <None Remove="OpenTelemetry.Contrib.Instrumentation.AWS" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="tmp\" />
     <Folder Include="DockerImages\SqlServer\" />
   </ItemGroup>
 </Project>

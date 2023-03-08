@@ -10,9 +10,10 @@ services:
     environment:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://adot:4317
       - OTEL_RESOURCE_ATTRIBUTES=service.name=aws-sampleapp-bookstorecore
+      - ASPNETCORE_ENVIRONMENT=Development
 
 
-  mssql: # database container stack
+  mssql:
     container_name: mssql
     image: mcr.microsoft.com/mssql/server:2022-latest
     user: root
@@ -56,8 +57,6 @@ services:
       - 4317:4317 # OTLP gRPC receiver
       - 4318:4318 # OTLP http receiver
       - 55679:55679 # zpages extension
-
-# Prometheus
   prometheus:
     container_name: prometheus
     image: prom/prometheus
