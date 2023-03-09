@@ -5,9 +5,9 @@
 
 processors:
   memory_limiter:
-    check_interval: 1s
+    check_interval: 5s
     limit_mib: 4000
-    spike_limit_mib: 800
+    spike_limit_mib: 500
 
   batch:
 
@@ -15,9 +15,6 @@ exporters:
   prometheus:
     endpoint: 0.0.0.0:8889
     namespace: default
-  awsxray:
-    region: us-east-1
-
 
 extensions:
   health_check:
@@ -28,11 +25,7 @@ extensions:
 
 service:
   pipelines:
-    traces:
-      receivers: [otlp]
-      processors: [batch, memory_limiter]
-      exporters: [awsxray]
     metrics:
       receivers: [otlp]
-      processors: [batch, memory_limiter]
+      processors: [batch]
       exporters: [prometheus]
