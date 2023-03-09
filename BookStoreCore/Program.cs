@@ -16,7 +16,7 @@ using OpenTelemetry.Contrib.Extensions.AWSXRay.Trace;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add Additional services to the container.
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 
 //Dependency Injection for DB Context
 builder.Services.AddDbContext<ApplicationDbContext>(
@@ -50,7 +50,7 @@ builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
         })
         .AddSource(serviceName)
         .SetResourceBuilder(appResourceBuilder.AddTelemetrySdk())
-        .AddXRayTraceId()
+        .AddXRayTraceId() // Creates an Xray Compatible Trace Id.
         .AddAWSInstrumentation()
         .AddHttpClientInstrumentation()
         .AddAspNetCoreInstrumentation()
