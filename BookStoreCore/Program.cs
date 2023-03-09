@@ -5,20 +5,16 @@ using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
 using OpenTelemetry;
 
-
-
 using BookStoreCore.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Contrib.Extensions.AWSXRay.Trace;
-using System.Net.Http;
 
 // Define some important constants to initialize tracing with
 
 var builder = WebApplication.CreateBuilder(args);
 
-<<<<<<< HEAD
 // Add Additional services to the container.
 builder.Services.AddRazorPages();
 
@@ -30,8 +26,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-=======
->>>>>>> parent of 7cca7e1 (Added xRay support.)
 
 #region OpenTelemetry
 var serviceName = "AWS.SampleApp.BookStoreCore";
@@ -41,28 +35,9 @@ var MyActivitySource = new ActivitySource(serviceName);
 var appResourceBuilder = ResourceBuilder.CreateDefault()
         .AddService(serviceName: serviceName, serviceVersion: serviceVersion);
 
-// Configure important OpenTelemetry settings, the console exporter, and instrumentation library
-//builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
-//{
-//    tracerProviderBuilder
-//        .AddXRayTraceId()
-//        .AddAWSInstrumentation()
-//        .AddConsoleExporter()
-//        .AddOtlpExporter(opt =>
-//        {
-//            opt.Protocol = OtlpExportProtocol.HttpProtobuf;
-//        })
-//        .AddSource(serviceName)
-//        .SetResourceBuilder(
-//            ResourceBuilder.CreateDefault()
-//                .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
-//        .AddHttpClientInstrumentation()
-//        .AddAspNetCoreInstrumentation()
-//        .AddSqlClientInstrumentation();
+//Configure important OpenTelemetry settings, the console exporter, and instrumentation library
 
-//});
 
-<<<<<<< HEAD
 builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
 {
     tracerProviderBuilder
@@ -84,13 +59,10 @@ builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
 });
 
 Sdk.SetDefaultTextMapPropagator(new AWSXRayPropagator());
-=======
->>>>>>> parent of 7cca7e1 (Added xRay support.)
 
 var meter = new Meter(serviceName);
 var counter = meter.CreateCounter<long>("app.request-counter");
 
-<<<<<<< HEAD
 builder.Services.AddOpenTelemetry().WithMetrics(metricProviderBuilder =>
 {
     metricProviderBuilder
@@ -98,43 +70,22 @@ builder.Services.AddOpenTelemetry().WithMetrics(metricProviderBuilder =>
         {
             options.Protocol = OtlpExportProtocol.Grpc;
             options.Endpoint = new Uri(Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT"));
-=======
-    builder.Services.AddOpenTelemetry().WithMetrics(metricProviderBuilder =>
-    {
-        metricProviderBuilder
-            .AddOtlpExporter(options =>
-            {
-                options.Protocol = OtlpExportProtocol.Grpc;
-                options.Endpoint = new Uri("http://adot:4317");
->>>>>>> parent of 7cca7e1 (Added xRay support.)
 
-            })
-            // *** Using Otel Collector now *** //
-            //.AddPrometheusExporter(options =>
-            //{
-            //    options.ScrapeResponseCacheDurationMilliseconds = 0;
-            //})
-            .AddMeter(meter.Name)
-            .SetResourceBuilder(appResourceBuilder)
-            .AddAspNetCoreInstrumentation()
-            .AddHttpClientInstrumentation();
-            
-    });
+        })
+        // *** Using Otel Collector now *** //
+        //.AddPrometheusExporter(options =>
+        //{
+        //    options.ScrapeResponseCacheDurationMilliseconds = 0;
+        //})
+        .AddMeter(meter.Name)
+        .SetResourceBuilder(appResourceBuilder)
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation();
+
+});
 
 #endregion
 
-<<<<<<< HEAD
-=======
-// Add Additional services to the container.
-builder.Services.AddRazorPages();
-builder.Services.AddDbContext<ApplicationDbContext>(
-    options => options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-        )); //Dependency Injection for DB Context
-
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
->>>>>>> parent of 7cca7e1 (Added xRay support.)
 #region Identity
     builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<ApplicationDbContext>();
     builder.Services.Configure<IdentityOptions>(options =>
