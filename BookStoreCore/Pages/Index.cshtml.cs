@@ -37,12 +37,6 @@ namespace BookStoreCore.Pages
             
         }
 
-        public void StartTrace()
-        {
-
-        }
-
-
     }
 
     public class Telmetry
