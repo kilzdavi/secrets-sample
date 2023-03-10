@@ -28,9 +28,9 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 
 #region OpenTelemetry
-var serviceName = "AWS.SampleApp.BookStoreCore";
-var serviceVersion = "1.0.0";
-var MyActivitySource = new ActivitySource(serviceName);
+var serviceName = builder.Configuration.GetSection("Observability")["ServiceName"];
+var serviceVersion = builder.Configuration.GetSection("Observability")["Version"];
+//var MyActivitySource = new ActivitySource(serviceName);
 
 var appResourceBuilder = ResourceBuilder.CreateDefault()
         .AddService(serviceName: serviceName, serviceVersion: serviceVersion);
