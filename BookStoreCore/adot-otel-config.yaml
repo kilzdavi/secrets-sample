@@ -17,6 +17,21 @@ exporters:
     namespace: default
   awsxray:
     region: us-east-1
+  file:
+    path: ./filename.json
+  awscloudwatchlogs:
+    log_group_name: "testing-logs"
+    log_stream_name: "testing-integrations-stream"
+    region: "us-east-1"
+    endpoint: "logs.us-east-1.amazonaws.com"
+  # awsemf:
+  #   log_group_name: 'ADOTLogGroup'
+  #   log_stream_name: 'ADOTLogStream'
+  #   namespace: 'ADOTMetricNS'
+  #   dimension_rollup_option: 1
+  #   log_retention: 60
+
+
 
 
 extensions:
@@ -27,6 +42,7 @@ extensions:
     size_mib: 512
 
 service:
+  extensions: [health_check, pprof, zpages]
   pipelines:
     traces:
       receivers: [otlp]
