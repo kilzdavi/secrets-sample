@@ -17,14 +17,8 @@ exporters:
     namespace: default
   awsxray:
     region: us-east-1
-  file:
-    path: ./filename.json
-  awscloudwatchlogs:
-    log_group_name: "testing-logs"
-    log_stream_name: "testing-integrations-stream"
-    region: "us-east-1"
-    endpoint: "logs.us-east-1.amazonaws.com"
-  # awsemf:
+  logging:
+  # awsemf: # Exports Metrics to aws cloudwatch.
   #   log_group_name: 'ADOTLogGroup'
   #   log_stream_name: 'ADOTLogStream'
   #   namespace: 'ADOTMetricNS'
@@ -51,4 +45,4 @@ service:
     metrics:
       receivers: [otlp]
       processors: [batch, memory_limiter]
-      exporters: [prometheus]
+      exporters: [prometheus, logging]

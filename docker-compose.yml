@@ -34,7 +34,7 @@ services:
     # build:
     # context: ../
     # dockerfile: cmd/awscollector/Dockerfile
-    command: ["--config=/etc/adot-otel-agent-config.yaml"]
+    command: ["--config=/etc/otel-config.yaml"]
     environment:
       - AWS_REGION=us-east-1
       - AWS_PROFILE=default
@@ -47,7 +47,7 @@ services:
       # Or define a profile available in your shared credentials file 
 
     volumes:
-      - ./BookStoreCore/adot-otel-config.yaml:/etc/adot-otel-agent-config.yaml
+      - ./BookStoreCore/otel-config.yaml:/etc/otel-config.yaml
       - ~/.aws:/root/.aws
     ports:
       - 1888:1888 # pprof extension

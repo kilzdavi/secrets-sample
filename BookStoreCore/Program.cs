@@ -1,15 +1,18 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Reflection.PortableExecutable;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
 using OpenTelemetry;
-
-using BookStoreCore.Data;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Contrib.Extensions.AWSXRay.Trace;
+using OpenTelemetry.Logs;
+
+using BookStoreCore.Data;
 
 // Define some important constants to initialize tracing with
 
@@ -37,11 +40,22 @@ var appResourceBuilder = ResourceBuilder.CreateDefault()
 
 //Configure important OpenTelemetry settings, the console exporter, and instrumentation library
 
+builder.Logging.AddOpenTelemetry(options =>
+{
+
+    //options.AddConsoleExporter();
+    //options.AddOtlpExporter(otlpOptions =>
+    //{
+    //    // Use IConfiguration directly for Otlp exporter endpoint option.
+    //    otlpOptions.Endpoint = new Uri(appBuilder.Configuration.GetValue<string>("Otlp:Endpoint"));
+    //});
+    
+});
 
 builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
 {
     tracerProviderBuilder
-        .AddConsoleExporter()
+        //.AddConsoleExporter()
         .AddOtlpExporter(options =>
         {
             options.Protocol = OtlpExportProtocol.Grpc;

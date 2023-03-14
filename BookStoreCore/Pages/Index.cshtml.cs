@@ -9,6 +9,7 @@ using OpenTelemetry.Exporter;
 
 
 
+
 namespace BookStoreCore.Pages
 {
     public class IndexModel : PageModel
@@ -20,21 +21,25 @@ namespace BookStoreCore.Pages
         {
             _logger = logger;
             _config = configuration;
-            MyActivitySource = new ActivitySource(_config.GetSection("Observability")["ServiceName"], _config.GetSection("Observability")["Version"]);
+            _source = new ActivitySource(_config.GetSection("Observability")["ServiceName"], _config.GetSection("Observability")["Version"]);
         }
 
-        public static ActivitySource MyActivitySource { get; set; }
+        private static ActivitySource _source { get; set; }
 
         public void OnGet()
         {
 
-            using var activity = MyActivitySource.StartActivity("VisitHome", ActivityKind.Server); // this will be translated to a X-Ray Segment
+            _logger.LogInformation("Testing Custom Log Message.");
+
+            using var activity = _source.StartActivity("VisitHome", ActivityKind.Server); // this will be translated to a X-Ray Segment
             activity?.SetTag("http.method", "GET");
-            activity?.SetTag("http.url", "http://www.bookstorecore.com");            
+            activity?.SetTag("http.url", "http://www.bookstorecore.com");
             activity?.SetTag("http.page", "Home");
             activity?.SetTag("CustomTrace", "true");
-            activity?.AddEvent(new("A user visited the site!")); //_Logger is recommened for high volumes of events. 
-            
+            activity?.AddEvent(new("A user visited the site!")); //_Logger is recommened for high volumes of events.
+
+            _logger.LogInformation("A User has Visited the site.");
+
         }
 
     }
