@@ -40,6 +40,7 @@ var appResourceBuilder = ResourceBuilder.CreateDefault()
 
 //Configure important OpenTelemetry settings, the console exporter, and instrumentation library
 
+// Currently Otel collector does not support logs.
 builder.Logging.AddOpenTelemetry(options =>
 {
 
