@@ -15,9 +15,15 @@ exporters:
   prometheus:
     endpoint: 0.0.0.0:8889
     namespace: default
+  prometheusremotewrite:
+    endpoint: https://aps-workspaces.us-east-1.amazonaws.com/workspaces/ws-bd9339a2-eeab-47fb-99aa-0c282eef45a8/api/v1/remote_write
+    auth:
+      authenticator: sigv4auth
   awsxray:
     region: us-east-1
   logging:
+  file:
+    path: /applogs.json
   # awsemf: # Exports Metrics to aws cloudwatch.
   #   log_group_name: 'ADOTLogGroup'
   #   log_stream_name: 'ADOTLogStream'
@@ -34,9 +40,12 @@ extensions:
   zpages:
   memory_ballast:
     size_mib: 512
+  sigv4auth:
+    region: "us-east-1"
+    service: "aps"
 
 service:
-  extensions: [health_check, pprof, zpages]
+  extensions: [health_check, pprof, zpages, sigv4auth]
   pipelines:
     traces:
       receivers: [otlp]
@@ -45,4 +54,8 @@ service:
     metrics:
       receivers: [otlp]
       processors: [batch, memory_limiter]
-      exporters: [prometheus, logging]
+      exporters: [prometheus, prometheusremotewrite]
+    logs:
+      receivers: [otlp]
+      processors: [batch, memory_limiter]
+      exporters: [file]
