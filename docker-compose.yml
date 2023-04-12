@@ -11,6 +11,12 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://adot:4317
       - OTEL_RESOURCE_ATTRIBUTES=service.name=aws-sampleapp-bookstorecore
       - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - fluentbit
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: "localhost:24224"
 
   mssql:
     container_name: mssql
@@ -44,7 +50,6 @@ services:
       # - AWS_SECRET_ACCESS_KEY=<to_be_added>
       #
       # Or define a profile available in your shared credentials file 
-
     volumes:
       - ./BookStoreCore/otel-config.yaml:/etc/otel-config.yaml
       - ~/.aws:/root/.aws
@@ -56,8 +61,6 @@ services:
       - 4317:4317 # OTLP gRPC receiver
       - 4318:4318 # OTLP http receiver
       - 55679:55679 # zpages extension
-    depends_on:
-      - fluentbit
     logging:
       driver: "fluentd"
       options:
@@ -79,9 +82,6 @@ services:
     ports:
       - "24224:24224"
       - "24224:24224/udp"
-    
-
-     
 
 
   prometheus:
