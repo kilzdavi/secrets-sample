@@ -66,6 +66,13 @@ services:
       options:
         fluentd-address: "localhost:24224"
 
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+    environment:
+      - "GF_DEFAULT_APP_MODE=development"
+      - "GF_LOG_LEVEL=debug"
 
   fluentbit:
     container_name: fluentbit
