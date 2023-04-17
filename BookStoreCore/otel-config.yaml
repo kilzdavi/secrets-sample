@@ -34,9 +34,6 @@ exporters:
   #   dimension_rollup_option: 1
   #   log_retention: 60
 
-
-
-
 extensions:
   health_check:
   pprof:
