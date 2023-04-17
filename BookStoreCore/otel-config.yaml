@@ -2,6 +2,9 @@
   otlp:
     protocols:
       grpc:
+  awsecscontainermetrics:
+    collection_interval: 10s
+
 
 processors:
   memory_limiter:
@@ -16,7 +19,7 @@ exporters:
     endpoint: 0.0.0.0:8889
     namespace: default
   prometheusremotewrite:
-    endpoint: https://aps-workspaces.us-east-1.amazonaws.com/workspaces/ws-bd9339a2-eeab-47fb-99aa-0c282eef45a8/api/v1/remote_write
+    endpoint: https://aps-workspaces.us-east-1.amazonaws.com/workspaces/ws-79ddb274-01a0-4f25-bbdb-57b3bd88515c/api/v1/remote_write
     auth:
       authenticator: sigv4auth
   awsxray:
