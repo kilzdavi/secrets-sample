@@ -10,7 +10,6 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Contrib.Extensions.AWSXRay.Trace;
-using OpenTelemetry.Logs;
 
 using BookStoreCore.Data;
 

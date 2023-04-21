@@ -35,10 +35,6 @@ services:
   aws-otel-collector:
     container_name: adot
     image: public.ecr.aws/aws-observability/aws-otel-collector:latest
-    # very slow when you build it first time locally!!!
-    # build:
-    # context: ../
-    # dockerfile: cmd/awscollector/Dockerfile
     command: ["--config=/etc/otel-config.yaml"]
     environment:
       - AWS_REGION=us-east-1
