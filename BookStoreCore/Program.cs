@@ -1,8 +1,11 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Drawing;
 using System.Reflection.PortableExecutable;
+using BookStoreCore.Classes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Amazon;
 
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -16,15 +19,38 @@ using BookStoreCore.Data;
 // Define some important constants to initialize tracing with
 
 var builder = WebApplication.CreateBuilder(args);
+var env = builder.Environment.EnvironmentName;
 
 // Add Additional services to the container.
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 
-//Dependency Injection for DB Context
+
+// Get base data for configuring SSM and Secrets Manager
+DemoConfiguration demoConfig = new DemoConfiguration();
+builder.Configuration.Bind("DemoConfig", demoConfig);
+
+//Dependency Injection for DB Context. Now Pulling from Secrets Manager.
 builder.Services.AddDbContext<ApplicationDbContext>(
-    options => options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-        ));
+    options =>
+    {
+        if (demoConfig.Environment == "stg")
+        {
+            //Using the default ConnectionString in appSettings.json
+            Console.WriteLine("Grabbing Connection String from appsettings.json");
+           var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            options.UseSqlServer(connectionString);   
+
+        }
+        else
+        {
+            //Grab the ConnectionString from SecretsManager.
+            Console.WriteLine("Grabbing Connection String from Secrets Manager");
+            SecretsManagerService secretsManagerService = new SecretsManagerService();
+            var connectionString = secretsManagerService.GetSecretAsync("rds-connection-string").GetAwaiter().GetResult();
+            options.UseSqlServer(connectionString);   
+        }
+        
+    });
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -40,17 +66,16 @@ var appResourceBuilder = ResourceBuilder.CreateDefault()
 //Configure important OpenTelemetry settings, the console exporter, and instrumentation library
 
 // Currently Otel collector does not support logs.
-builder.Logging.AddOpenTelemetry(options =>
-{
-
-    //options.AddConsoleExporter();
-    //options.AddOtlpExporter(otlpOptions =>
-    //{
-    //    // Use IConfiguration directly for Otlp exporter endpoint option.
-    //    otlpOptions.Endpoint = new Uri(appBuilder.Configuration.GetValue<string>("Otlp:Endpoint"));
-    //});
-    
-});
+// builder.Logging.AddOpenTelemetry(options =>
+// {
+//     // options.AddConsoleExporter();
+//     options.AddOtlpExporter(otlpOptions =>
+//     {
+//         // Use IConfiguration directly for Otlp exporter endpoint option.
+//         otlpOptions.Endpoint = new Uri(appBuilder.Configuration.GetValue<string>("Otlp:Endpoint"));
+//     });
+//     
+// });
 
 builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
 {
@@ -168,7 +193,7 @@ using (var scope = app.Services.CreateScope())
      DbInitializer.Initialize(context);
 }
 
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
