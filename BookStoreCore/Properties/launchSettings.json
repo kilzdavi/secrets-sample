@@ -17,6 +17,15 @@
         "OTEL_EXPORTER_OTLP_ENDPOINT": "http://adot:4317"
       }
     },
+    "Release": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:7091;http://localhost:5124",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Release",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://adot:4317"
+      }
+    },
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,

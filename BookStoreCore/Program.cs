@@ -6,6 +6,8 @@ using BookStoreCore.Classes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Amazon;
+using Amazon.SecretsManager;
+using Amazon.SecretsManager.Extensions.Caching;
 
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -15,6 +17,7 @@ using OpenTelemetry.Exporter;
 using OpenTelemetry.Contrib.Extensions.AWSXRay.Trace;
 
 using BookStoreCore.Data;
+using Microsoft.Extensions.Options;
 
 // Define some important constants to initialize tracing with
 
@@ -28,12 +31,40 @@ builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 // Get base data for configuring SSM and Secrets Manager
 DemoConfiguration demoConfig = new DemoConfiguration();
 builder.Configuration.Bind("DemoConfig", demoConfig);
+// builder.Services.Configure<DemoConfiguration>(demoConfig);
 
-//Dependency Injection for DB Context. Now Pulling from Secrets Manager.
-builder.Services.AddDbContext<ApplicationDbContext>(
-    options =>
+// Dependency Injection (DI) configuration options.
+// builder.Services.Configure<DemoConfiguration>(builder.Configuration.GetSection("demoConfig"));
+
+ builder.Services.AddSingleton(demoConfig);
+SecretsManagerService secretsManagerService = new SecretsManagerService(demoConfig);
+builder.Services.AddSingleton(secretsManagerService);
+
+
+// Add Secrets Manager caching client. This will cause secrets to expire after
+// the indicated number of milliseconds
+builder.Services.AddAWSService<IAmazonSecretsManager>();
+
+// The cache hook object allows you to write code when you retrieve something from Secrets manager or when the cache is refreshed
+builder.Services.AddSingleton<ISecretCacheHook, SecretManagerCacheHook>();
+
+builder.Services.AddSingleton(serviceProvider => 
+{
+    var smClient = serviceProvider.GetService<IAmazonSecretsManager>();
+    var cacheHook = serviceProvider.GetService<ISecretCacheHook>();
+    SecretsManagerCache cache = new(smClient, new SecretCacheConfiguration
     {
-        if (demoConfig.Environment == "stg")
+        CacheItemTTL = demoConfig.SecretsCacheExpiry,   
+        CacheHook = cacheHook
+        
+    });
+    return cache;
+});
+
+// DI for DB Context. Now Pulling from Secrets Manager.
+builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
+    {
+        if (env == "DevelopmentSkip")
         {
             //Using the default ConnectionString in appSettings.json
             Console.WriteLine("Grabbing Connection String from appsettings.json");
@@ -45,8 +76,18 @@ builder.Services.AddDbContext<ApplicationDbContext>(
         {
             //Grab the ConnectionString from SecretsManager.
             Console.WriteLine("Grabbing Connection String from Secrets Manager");
-            SecretsManagerService secretsManagerService = new SecretsManagerService();
-            var connectionString = secretsManagerService.GetSecretAsync("rds-connection-string").GetAwaiter().GetResult();
+            
+            var smClient = serviceProvider.GetService<IAmazonSecretsManager>();
+            var cacheHook = serviceProvider.GetService<ISecretCacheHook>();
+
+            var cache = new SecretsManagerCache(smClient, new SecretCacheConfiguration()
+            {
+                CacheItemTTL = demoConfig.SecretsCacheExpiry,
+                CacheHook = cacheHook
+            });
+
+            var connectionString = cache.GetSecretString("rds-connection-string").GetAwaiter().GetResult();
+            
             options.UseSqlServer(connectionString);   
         }
         
@@ -56,6 +97,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 
 #region OpenTelemetry
+
 var serviceName = builder.Configuration.GetSection("Observability")["ServiceName"];
 var serviceVersion = builder.Configuration.GetSection("Observability")["Version"];
 //var MyActivitySource = new ActivitySource(serviceName);
@@ -168,6 +210,7 @@ builder.Services.AddOpenTelemetry().WithMetrics(metricProviderBuilder =>
     options.User.RequireUniqueEmail = false;
 });
 #endregion
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

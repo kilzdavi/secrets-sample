@@ -1,0 +1,43 @@
+@page
+@model BookStoreCore.Pages.SecretsManager.IndexModel
+
+@{
+    Layout = null;
+}
+
+
+<div>
+    
+<h1 class="display-4">Secrets Manager</h1>
+
+<p>The following are secrets manager values included in the application.</p>
+
+<p>There is a cache expiry of <strong>@Model.Configuration.SecretsCacheExpiry</strong> milliseconds.</p>
+
+<p>Therefore, if you change a value in Secrets Manager, it will take that long to refresh.</p>
+
+    <div class="text-center">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Secret</th>
+                    <th scope="col">Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>Launch Code</td>
+                        <td>@Model.LaunchCode</td>
+                    </tr>
+
+                <tr>
+
+                <tr>
+                    <td>Secret Plan Location</td>
+                    <td>@Model.SecretPlanLocation</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>

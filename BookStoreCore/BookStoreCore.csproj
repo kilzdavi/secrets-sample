@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Amazon.Extensions.Configuration.SystemsManager" Version="6.0.0" />
     <PackageReference Include="AWSSDK.SecretsManager" Version="3.7.201.33" />
     <PackageReference Include="AWSSDK.SecretsManager.Caching" Version="1.0.6" />
     <PackageReference Include="Kralizek.Extensions.Configuration.AWSSecretsManager" Version="1.7.0" />
