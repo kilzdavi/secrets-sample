@@ -3,26 +3,24 @@ using Amazon.SecretsManager.Model;
 
 namespace BookStoreCore.Classes;
 
-public class SecretManagerCacheHook : ISecretCacheHook
+public class SecretsManagerCacheHook : ISecretCacheHook
 {
-    private ILogger<SecretManagerCacheHook> _logger;
+    private ILogger<SecretsManagerCacheHook> _logger;
 
-    public SecretManagerCacheHook(ILogger<SecretManagerCacheHook> logger)
+    public SecretsManagerCacheHook(ILogger<SecretsManagerCacheHook> logger)
     {
         _logger = logger;
     }
     
     public object Put(object o)
     {
-        Console.WriteLine($"Put - {GetSecretMessage(o)}");
-
         _logger.LogInformation($"Put - {GetSecretMessage(o)}");
         return o;
     }
 
     public object Get(object cachedObject)
     {
-        Console.WriteLine($"Get - {GetSecretMessage(cachedObject)}");
+        
         _logger.LogInformation($"Get - {GetSecretMessage(cachedObject)}");
         return cachedObject;
         

@@ -1,6 +1,9 @@
 using Amazon.SecretsManager.Extensions.Caching;
 using BookStoreCore.Classes;
+using Google.Protobuf;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace BookStoreCore.Pages.SecretsManager;
 
@@ -9,8 +12,10 @@ public class IndexModel : PageModel
 
     private readonly ILogger<Index> _logger;
     public DemoConfiguration Configuration { get; set; }
-    public string LaunchCode { get; set; }
-    public string SecretPlanLocation { get; set; }
+    public string SystemUserName { get; set; }
+    public string SystemPassword { get; set; }
+    public string SystemApiKey { get; set; }
+
     private SecretsManagerCache _cache { get; set; }
 
 
@@ -25,8 +30,14 @@ public class IndexModel : PageModel
     public async Task OnGet()
     {
         _logger.LogInformation("Accessing Secrets Manager");
-        LaunchCode = await _cache.GetSecretString("launchcode-secret-stg");
-        SecretPlanLocation = await _cache.GetSecretString("secret-plan-location-secret-stg");
+
+
+        var systemCredentials = JObject.Parse(await _cache.GetSecretString("staging/bookstore/system-credentials"));
+        
+        SystemApiKey = systemCredentials["apiKey"].ToString();
+        SystemUserName = systemCredentials["system-super-user"].ToString();
+        SystemPassword = systemCredentials["system-password"].ToString();
+        
         
     }
     

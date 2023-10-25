@@ -6,6 +6,7 @@ using BookStoreCore.Classes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Amazon;
+using Amazon.Runtime.Internal.Util;
 using Amazon.SecretsManager;
 using Amazon.SecretsManager.Extensions.Caching;
 
@@ -37,29 +38,31 @@ builder.Configuration.Bind("DemoConfig", demoConfig);
 // builder.Services.Configure<DemoConfiguration>(builder.Configuration.GetSection("demoConfig"));
 
  builder.Services.AddSingleton(demoConfig);
-SecretsManagerService secretsManagerService = new SecretsManagerService(demoConfig);
-builder.Services.AddSingleton(secretsManagerService);
 
+#region SecretsManager
 
-// Add Secrets Manager caching client. This will cause secrets to expire after
-// the indicated number of milliseconds
-builder.Services.AddAWSService<IAmazonSecretsManager>();
+    // Add Secrets Manager caching client. This will cause secrets to expire after
+    // the indicated number of milliseconds
+    builder.Services.AddAWSService<IAmazonSecretsManager>();
 
-// The cache hook object allows you to write code when you retrieve something from Secrets manager or when the cache is refreshed
-builder.Services.AddSingleton<ISecretCacheHook, SecretManagerCacheHook>();
+    // The cache hook object allows you to write code when you retrieve something from Secrets manager or when the cache is refreshed
+    builder.Services.AddSingleton<ISecretCacheHook, SecretsManagerCacheHook>();
 
-builder.Services.AddSingleton(serviceProvider => 
-{
-    var smClient = serviceProvider.GetService<IAmazonSecretsManager>();
-    var cacheHook = serviceProvider.GetService<ISecretCacheHook>();
-    SecretsManagerCache cache = new(smClient, new SecretCacheConfiguration
+    builder.Services.AddSingleton(serviceProvider => 
     {
-        CacheItemTTL = demoConfig.SecretsCacheExpiry,   
-        CacheHook = cacheHook
-        
+        var smClient = serviceProvider.GetService<IAmazonSecretsManager>();
+        var cacheHook = serviceProvider.GetService<ISecretCacheHook>();
+        SecretsManagerCache cache = new(smClient, new SecretCacheConfiguration
+        {
+            CacheItemTTL = demoConfig.SecretsCacheExpiry,   
+            CacheHook = cacheHook
+            
+        });
+        return cache;
     });
-    return cache;
-});
+
+#endregion
+
 
 // DI for DB Context. Now Pulling from Secrets Manager.
 builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
@@ -76,16 +79,7 @@ builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =
         {
             //Grab the ConnectionString from SecretsManager.
             Console.WriteLine("Grabbing Connection String from Secrets Manager");
-            
-            var smClient = serviceProvider.GetService<IAmazonSecretsManager>();
-            var cacheHook = serviceProvider.GetService<ISecretCacheHook>();
-
-            var cache = new SecretsManagerCache(smClient, new SecretCacheConfiguration()
-            {
-                CacheItemTTL = demoConfig.SecretsCacheExpiry,
-                CacheHook = cacheHook
-            });
-
+            var cache = serviceProvider.GetService<SecretsManagerCache>();
             var connectionString = cache.GetSecretString("rds-connection-string").GetAwaiter().GetResult();
             
             options.UseSqlServer(connectionString);   
