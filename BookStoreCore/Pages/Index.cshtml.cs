@@ -44,13 +44,4 @@ namespace BookStoreCore.Pages
 
     }
 
-    public class Telmetry
-    {
-
-        public Telmetry()
-        {
-
-        }
-    }
-
 }
