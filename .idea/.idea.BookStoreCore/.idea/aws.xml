@@ -14,7 +14,4 @@
       </list>
     </option>
   </component>
-  <component name="connectionManager">
-    <option name="activeConnectionId" value="sso;us-east-1;https://d-9067925563.awsapps.com/start" />
-  </component>
 </project>

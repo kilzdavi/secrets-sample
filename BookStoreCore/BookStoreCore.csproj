@@ -50,4 +50,7 @@
   <ItemGroup>
     <Folder Include="DockerImages\SqlServer\" />
   </ItemGroup>
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Pages\SecretsManager\Index.cshtml" />
+  </ItemGroup>
 </Project>

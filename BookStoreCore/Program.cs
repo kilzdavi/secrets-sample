@@ -29,62 +29,13 @@ var env = builder.Environment.EnvironmentName;
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 
 
-// Get base data for configuring SSM and Secrets Manager
-DemoConfiguration demoConfig = new DemoConfiguration();
-builder.Configuration.Bind("DemoConfig", demoConfig);
-// builder.Services.Configure<DemoConfiguration>(demoConfig);
-
-// Dependency Injection (DI) configuration options.
-// builder.Services.Configure<DemoConfiguration>(builder.Configuration.GetSection("demoConfig"));
-
- builder.Services.AddSingleton(demoConfig);
-
-#region SecretsManager
-
-    // Add Secrets Manager caching client. This will cause secrets to expire after
-    // the indicated number of milliseconds
-    builder.Services.AddAWSService<IAmazonSecretsManager>();
-
-    // The cache hook object allows you to write code when you retrieve something from Secrets manager or when the cache is refreshed
-    builder.Services.AddSingleton<ISecretCacheHook, SecretsManagerCacheHook>();
-
-    builder.Services.AddSingleton(serviceProvider => 
-    {
-        var smClient = serviceProvider.GetService<IAmazonSecretsManager>();
-        var cacheHook = serviceProvider.GetService<ISecretCacheHook>();
-        SecretsManagerCache cache = new(smClient, new SecretCacheConfiguration
-        {
-            CacheItemTTL = demoConfig.SecretsCacheExpiry,   
-            CacheHook = cacheHook
-            
-        });
-        return cache;
-    });
-
-#endregion
-
-
 // DI for DB Context. Now Pulling from Secrets Manager.
 builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
     {
-        if (env == "DevelopmentSkip")
-        {
             //Using the default ConnectionString in appSettings.json
             Console.WriteLine("Grabbing Connection String from appsettings.json");
            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             options.UseSqlServer(connectionString);   
-
-        }
-        else
-        {
-            //Grab the ConnectionString from SecretsManager.
-            Console.WriteLine("Grabbing Connection String from Secrets Manager");
-            var cache = serviceProvider.GetService<SecretsManagerCache>();
-            var connectionString = cache.GetSecretString("rds-connection-string").GetAwaiter().GetResult();
-            
-            options.UseSqlServer(connectionString);   
-        }
-        
     });
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
