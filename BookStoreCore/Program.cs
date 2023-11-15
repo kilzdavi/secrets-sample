@@ -7,8 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Amazon;
 using Amazon.Runtime.Internal.Util;
-using Amazon.SecretsManager;
-using Amazon.SecretsManager.Extensions.Caching;
 
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
