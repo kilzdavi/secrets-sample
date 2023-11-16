@@ -27,7 +27,6 @@ var env = builder.Environment.EnvironmentName;
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 
 
-// DI for DB Context. Now Pulling from Secrets Manager.
 builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
     {
             //Using the default ConnectionString in appSettings.json
