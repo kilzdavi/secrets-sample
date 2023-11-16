@@ -1,12 +1,6 @@
-using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using System.Drawing;
-using System.Reflection.PortableExecutable;
-using BookStoreCore.Classes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using Amazon;
-using Amazon.Runtime.Internal.Util;
 
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -16,18 +10,17 @@ using OpenTelemetry.Exporter;
 using OpenTelemetry.Contrib.Extensions.AWSXRay.Trace;
 
 using BookStoreCore.Data;
-using Microsoft.Extensions.Options;
+
 
 // Define some important constants to initialize tracing with
 
 var builder = WebApplication.CreateBuilder(args);
-var env = builder.Environment.EnvironmentName;
 
 // Add Additional services to the container.
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 
 
-builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
+builder.Services.AddDbContext<ApplicationDbContext>((options) =>
     {
             //Using the default ConnectionString in appSettings.json
             Console.WriteLine("Grabbing Connection String from appsettings.json");
@@ -84,7 +77,6 @@ builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
 Sdk.SetDefaultTextMapPropagator(new AWSXRayPropagator());
 
 var meter = new Meter(serviceName);
-var counter = meter.CreateCounter<long>("app.request-counter");
 
 builder.Services.AddOpenTelemetry().WithMetrics(metricProviderBuilder =>
 {
