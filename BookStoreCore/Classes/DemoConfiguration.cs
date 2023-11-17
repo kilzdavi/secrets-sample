@@ -1,16 +1,15 @@
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace BookStoreCore.Classes;
 
 public class DemoConfiguration
 {
-    [JsonProperty("ssmTimeToLive")]
+    [JsonPropertyName("ssmTimeToLive")]
     public uint SsmTimeToLive { get; set; }
 
-    [JsonProperty("ssmPath")]
+    [JsonPropertyName("ssmPath")]
     public string SsmPath { get; set; }
 
-    [JsonProperty("secretsCacheExpiry")]
+    [JsonPropertyName("secretsCacheExpiry")]
     public uint SecretsCacheExpiry { get; set; }
 }
