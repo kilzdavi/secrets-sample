@@ -23,7 +23,6 @@ builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 builder.Services.AddDbContext<ApplicationDbContext>((options) =>
     {
             //Using the default ConnectionString in appSettings.json
-            Console.WriteLine("Grabbing Connection String from appsettings.json");
            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             options.UseSqlServer(connectionString);   
     });
